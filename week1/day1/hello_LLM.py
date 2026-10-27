@@ -10,7 +10,7 @@ if not my_api_key:
 client=Groq(api_key=my_api_key)
 model = "openai/gpt-oss-120b"
 role="user"
-prompt="do you know iits?"
+prompt="About the pm of india?"
 message = {"role": role,
            "content": prompt}
 messages=[message]
