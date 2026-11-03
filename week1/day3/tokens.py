@@ -26,10 +26,10 @@ for prompt in promts:
     response = client.chat.completions.create(model=model, messages=messages, max_tokens=100)
     usage=response.usage
     print(f"Prompt: {prompt} --> your_token:{usage.prompt_tokens} complerion_token: {usage.completion_tokens} total_token: {usage.total_tokens}finish_reason:{response.choices[0].finish_reason}")
-#     
-# print(response)
+    
+print(response)
 
 
-# print("************************************************************************************************************************")
-# answer=response.choices[0].message.content
-# print(answer)
+print("************************************************************************************************************************")
+answer=response.choices[0].message.content
+print(answer)
