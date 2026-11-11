@@ -1,0 +1,49 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ShoppingGPT</title>
+</head>
+<body>
+
+    <h1>ShoppingGPT AI Assistant</h1>
+
+    <form method="POST">
+
+        <input
+            type="text"
+            name="keyword"
+            placeholder="Search products..."
+            value="{{ keyword }}"
+            required
+        >
+
+        <button type="submit">Search</button>
+
+    </form>
+
+    <h2>Search Results</h2>
+
+    {% for product in products %}
+
+        <div>
+            <h3>{{ product['product_name'] }}</h3>
+
+            <p>Brand: {{ product['brand'] }}</p>
+
+            <p>Price: ₹{{ product['price'] }}</p>
+
+            <p>Color: {{ product['color'] }}</p>
+
+            <p>Stock: {{ product['stock_quantity'] }}</p>
+        </div>
+
+    {% else %}
+
+        <p>No products found.</p>
+
+    {% endfor %}
+
+</body>
+</html>
