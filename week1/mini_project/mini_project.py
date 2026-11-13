@@ -2,65 +2,99 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from groq import Groq
-
+from pydantic import BaseModel
 load_dotenv()
 my_api_key=os.getenv("GROQ_API_KEY")
 if not my_api_key:
     raise ValueError("API key is required")
 client=Groq(api_key=my_api_key)
 model = "openai/gpt-oss-120b"
-role="user"
-#stuructured data extraction from unstructured data
-from pydantic import BaseModel
-class Recruitment(BaseModel):
-    name:str
-    email:str
-    phone:int
-    skills:str
-    projects:str
-    experience:str
-    
-schema=Recruitment.model_json_schema()
-
-response_format={
-    "type":"json_object"
-} 
-
-system_prompt=f"""
-Extract the  information from recruitment ticket stricly based on this schema and give json output:
-{schema}"""
-
-message_system={
-    "role":"user",
-    "content":system_prompt
-}
 
 
-text = "AYUSH SHARMA | AI/ML Engineer | Email: ayush.sharma@example.com | Phone: +91 9876543210 | Location: Lucknow, Uttar Pradesh | LinkedIn: linkedin.com/in/ayushsharma | GitHub: github.com/ayushsharma | Education: B.Tech Computer Science Engineering, ABC Institute of Technology, Lucknow (2022–2026), CGPA: 8.4/10 | Class XII: XYZ Public School, 2022, 85% | Technical Skills: Python, SQL, Java, Machine Learning, Deep Learning, NLP, LLMs, LangChain, NumPy, Pandas, Scikit-learn, Matplotlib, Flask, FastAPI, HTML, CSS, MySQL, Git, GitHub | Projects: AI-Powered Resume Analyzer (Python, NLP, Pydantic), House Price Prediction (Linear Regression, Random Forest, 89% R² score), Movie Recommendation System (Python, Cosine Similarity, TMDB API, Streamlit) | Internship: Machine Learning Intern at Tech Solutions Pvt. Ltd. (January 2025 – March 2025) | Responsibilities: Data cleaning, preprocessing, EDA, ML model development, visualization | Certifications: Machine Learning – IIT Kanpur, Data Analysis with Python – IIT Roorkee, Python Programming – Coursera, SQL for Data Science – Great Learning | Achievements: Participated in national-level hackathon, solved 150+ coding problems, developed 3+ projects | Soft Skills: Problem Solving, Communication, Teamwork, Critical Thinking, Adaptability | Languages: English, Hindi"
-prompt=f"""
-this is a recuritment extract informtion and give it to me
-{text}
+
+job_description="""
+
+Description
+Do you want to solve real customer problems through innovative technology? Do you enjoy working on scalable services in a collaborative team environment? Do you want to see your code directly impact millions of customers worldwide?
+
+At Amazon, we hire the best minds in technology to innovate and build on behalf of our customers. Customer obsession is part of our company DNA, which has made us one of the world's most beloved brands.
+
+Our Software Development Engineers (SDEs) use modern technology to solve complex problems while seeing their work's impact first-hand. The challenges SDEs solve at Amazon are meaningful and influence millions of customers, sellers, and products globally. We seek individuals passionate about creating new products, features, and services while managing ambiguity in an environment where development cycles are measured in weeks, not years.
+
+At Amazon, we believe in ownership at every level. As an SDE-I, you'll own the entire lifecycle of your code - from design through deployment and ongoing operations. This ownership mindset, combined with our commitment to operational excellence, ensures we deliver the highest quality solutions for our customers.
+
+We're looking for curious minds who think big and want to define tomorrow's technology. At Amazon, you'll grow into the high-impact engineer you know you can be, supported by a culture of learning and mentorship. Every day brings exciting new challenges and opportunities for personal growth.
+Key job responsibilities
+• Collaborate and communicate effectively with experienced cross-disciplinary Amazonians to design, build, and operate innovative products and services that delight our customers, while participating in technical discussions to drive solutions forward.
+• Design and develop scalable solutions using cloud-native architectures and microservices in a large distributed computing environment.
+• Participate in code reviews and contribute to technical documentation.
+• Build and maintain resilient distributed systems that are scalable, fault-tolerant, and cost-effective.
+• Leverage and contribute to the development of GenAI and AI-powered tools to enhance development productivity while staying current with emerging technologies.
+• Write clean, maintainable code following best practices and design patterns.
+• Work in an agile environment practicing CI/CD principles while participating in operational responsibilities including on-call duties.
+• Demonstrate operational excellence through monitoring, troubleshooting, and resolving production issues.
+Basic Qualifications
+- Experience with at least one general-purpose programming language such as Java, Python, C++, C#, Go, Rust, or TypeScript
+- Experience with data structure implementation, basic algorithm development, and/or object-oriented design principles
+- Currently has, or is in the process of obtaining a bachelor’s degree in Computer Science, Computer Engineering, Data Science, Information Systems, or related STEM fields
+- Must be 18 years of age of older
+Preferred Qualifications
+- Experience from previous technical internship(s) or demonstrated project experience
+- Experience with one or more of the following: AI tools for development productivity, Cloud platforms (preferably AWS), Database systems (SQL and NoSQL), Contributing to open-source projects, Version control systems, Debugging and troubleshooting complex systems
+- Demonstrated ability to learn and adapt to new technologies quickly
+- Basic understanding of software development lifecycle (SDLC)
+- Strong problem-solving and analytical skills
+- Excellent written and verbal communication skills
 """
 
-message = {"role": role,
-           "content": prompt}
-messages=[message_system,message]
-response = client.chat.completions.create(model=model, messages=messages,response_format=response_format)
 
 
+class JobD(BaseModel):
+    role:str
+    required_skills:list[str]
+    preferred_skills:list[str]
+    minimum_experience:float | None
+    Education_requirments:list[str]
+    
 
+jobd_schema=JobD.model_json_schema()
+
+system_prompt=f"""
+you are an expert HR assistant.
+your job is to ananlyze the job discription and extract structured information from them.
+Return only valid JSON matching the following schema:
+
+{jobd_schema}
+important:
+do not return the schema itself
+do not return the files like "property","type" or "tiitle".
+filll the schema with the information from the job description.
+
+if minimum experience is not mentioned in the job description, return null for that field.
+if infromation is missing , return an empty list.type
+do not add any extra information or explanation.
+
+"""
+
+user_prompt=f"""
+analyze the following job dicsription:
+
+{job_description}
+"""
+message_system={
+    "role":"system",
+    "content":system_prompt
+    
+}
+message_user={
+    "role":"user",
+    "content":user_prompt
+}
+response_format={
+    "type":"json_object"
+}
+messages=[message_system,message_user]
+response=client.chat.completions.create(model=model,messages=messages,response_format=response_format)
 answer=response.choices[0].message.content
-# print(answer)
-
-
-#how to read it 
-import json
 raw_json=answer
-data_file=json.loads(raw_json)
-recruitment=Recruitment(**data_file)
-print(recruitment.name)
-print(recruitment.email)
-print(recruitment.phone)
-print(recruitment.skills)
-print(recruitment.projects)
-print(recruitment.experience)
+print(raw_json)
