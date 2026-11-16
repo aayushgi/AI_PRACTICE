@@ -98,3 +98,38 @@ response=client.chat.completions.create(model=model,messages=messages,response_f
 answer=response.choices[0].message.content
 raw_json=answer
 print(raw_json)
+print("**********************************************************************************")
+import json
+job_data=json.loads(raw_json)
+job=JobD(**job_data)
+print(job.minimum_experience)
+print(job.Education_requirments)
+
+
+
+
+#resume schema
+class Resume(BaseModel):
+    name:str | None=None
+    email:str | None=None
+    phone:str | None=None
+    skills:list[str]
+    tota_experience:float | None=None
+    skills=list[str]
+    education:list[str]
+    projects:list[str]
+    certifications:list[str]
+    experiences=list[Experience]
+    
+class Experience(BaseModel):
+    company:str | None=None
+    role:str | None=None
+    duration:str | None=None
+    description:str | None=None
+    skill_used:list[str] | None=None
+    
+    
+resume_schema=Resume.model_json_schema()
+
+
+#part 3 reading the resume
