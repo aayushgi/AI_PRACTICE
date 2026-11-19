@@ -1,18 +1,25 @@
-import os 
+
+import os
 from pathlib import Path
 import time
+import json
 from dotenv import load_dotenv
 from groq import Groq
-from pydantic import BaseModel
-import time
+from pydantic import BaseModel, Field
+
 load_dotenv()
+
 my_api_key=os.getenv("GROQ_API_KEY")
+
 if not my_api_key:
     raise ValueError("API key is required")
+
 client=Groq(api_key=my_api_key)
+
 model = "openai/gpt-oss-120b"
 
 
+#job description
 
 job_description="""
 
@@ -26,6 +33,7 @@ Our Software Development Engineers (SDEs) use modern technology to solve complex
 At Amazon, we believe in ownership at every level. As an SDE-I, you'll own the entire lifecycle of your code - from design through deployment and ongoing operations. This ownership mindset, combined with our commitment to operational excellence, ensures we deliver the highest quality solutions for our customers.
 
 We're looking for curious minds who think big and want to define tomorrow's technology. At Amazon, you'll grow into the high-impact engineer you know you can be, supported by a culture of learning and mentorship. Every day brings exciting new challenges and opportunities for personal growth.
+
 Key job responsibilities
 • Collaborate and communicate effectively with experienced cross-disciplinary Amazonians to design, build, and operate innovative products and services that delight our customers, while participating in technical discussions to drive solutions forward.
 • Design and develop scalable solutions using cloud-native architectures and microservices in a large distributed computing environment.
@@ -35,11 +43,13 @@ Key job responsibilities
 • Write clean, maintainable code following best practices and design patterns.
 • Work in an agile environment practicing CI/CD principles while participating in operational responsibilities including on-call duties.
 • Demonstrate operational excellence through monitoring, troubleshooting, and resolving production issues.
+
 Basic Qualifications
 - Experience with at least one general-purpose programming language such as Java, Python, C++, C#, Go, Rust, or TypeScript
 - Experience with data structure implementation, basic algorithm development, and/or object-oriented design principles
 - Currently has, or is in the process of obtaining a bachelor’s degree in Computer Science, Computer Engineering, Data Science, Information Systems, or related STEM fields
-- Must be 18 years of age of older
+- Must be 18 years of age or older
+
 Preferred Qualifications
 - Experience from previous technical internship(s) or demonstrated project experience
 - Experience with one or more of the following: AI tools for development productivity, Cloud platforms (preferably AWS), Database systems (SQL and NoSQL), Contributing to open-source projects, Version control systems, Debugging and troubleshooting complex systems
@@ -50,90 +60,104 @@ Preferred Qualifications
 """
 
 
+#job description schema
 
 class JobD(BaseModel):
-    role:str
-    required_skills:list[str]
-    preferred_skills:list[str]
-    minimum_experience:float | None
-    Education_requirments:list[str]
-    
+    role: str
+    required_skills: list[str] = Field(default_factory=list)
+    preferred_skills: list[str] = Field(default_factory=list)
+    minimum_experience: float | None = None
+    education_requirements: list[str] = Field(default_factory=list)
+
 
 jobd_schema=JobD.model_json_schema()
 
-system_prompt=f"""
-you are an expert HR assistant.
-your job is to ananlyze the job discription and extract structured information from them.
-Return only valid JSON matching the following schema:
 
-{jobd_schema}
-important:
-do not return the schema itself
-do not return the files like "property","type" or "tiitle".
-filll the schema with the information from the job description.
+def parse_job_description(job_description):
 
-if minimum experience is not mentioned in the job description, return null for that field.
-if infromation is missing , return an empty list.type
-do not add any extra information or explanation.
+    system_prompt=f"""
+    you are an expert HR assistant.
+    your job is to analyze the job description and extract structured information from them.
+    Return only valid JSON matching the following schema:
 
-"""
+    {jobd_schema}
 
-user_prompt=f"""
-analyze the following job dicsription:
+    important:
+    do not return the schema itself
+    do not return the fields like "properties", "type" or "title".
+    fill the schema with the information from the job description.
 
-{job_description}
-"""
-message_system={
-    "role":"system",
-    "content":system_prompt
-    
-}
-message_user={
-    "role":"user",
-    "content":user_prompt
-}
-response_format={
-    "type":"json_object"
-}
-messages=[message_system,message_user]
-response=client.chat.completions.create(model=model,messages=messages,response_format=response_format)
-answer=response.choices[0].message.content
-raw_json=answer
-#print(raw_json)
-print("**********************************************************************************")
-import json
-job_data=json.loads(raw_json)
-job=JobD(**job_data)
-print(job.minimum_experience)
-print(job.Education_requirments)
+    if minimum experience is not mentioned in the job description, return null for that field.
+    if information is missing, return an empty list.
+    do not add any extra information or explanation.
+    """
 
+    user_prompt=f"""
+    analyze the following job description:
 
+    {job_description}
+    """
+
+    message_system={
+        "role":"system",
+        "content":system_prompt
+    }
+
+    message_user={
+        "role":"user",
+        "content":user_prompt
+    }
+
+    messages=[message_system,message_user]
+
+    response_format={
+        "type":"json_object"
+    }
+
+    response=client.chat.completions.create(
+        model=model,
+        messages=messages,
+        response_format=response_format
+    )
+
+    answer=response.choices[0].message.content
+
+    job_data=json.loads(answer)
+
+    job=JobD(**job_data)
+
+    return job
 
 
 #resume schema
-class MatchResult(BaseModel):
-    score:float
-    details:dict
-class Resume(BaseModel):
-    name:str | None=None
-    email:str | None=None
-    phone:str | None=None
-    skills:list[str]
-    tota_experience:float | None=None
-    skills=list[str]
-    education:list[str]
-    projects:list[str]
-    certifications:list[str]
-    experiences=list[Experience]
-    
+
+#Experience class ko Resume se pehle define karna zaroori hai
+
+
 class Experience(BaseModel):
-    company:str | None=None
-    role:str | None=None
-    duration:str | None=None
-    description:str | None=None
-    skill_used:list[str] | None=None
-    
-    
+    company: str | None = None
+    role: str | None = None
+    duration: str | None = None
+    description: str | None = None
+    skill_used: list[str] = Field(default_factory=list)
+
+class MatchResult(BaseModel):
+    score: float
+    details: dict
+
+
+
+class Resume(BaseModel):
+    name: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    skills: list[str] = Field(default_factory=list)
+    total_experience: float | None = None
+    education: list[str] = Field(default_factory=list)
+    projects: list[str] = Field(default_factory=list)
+    certifications: list[str] = Field(default_factory=list)
+    experiences: list[Experience] = Field(default_factory=list)
+
 resume_schema=Resume.model_json_schema()
 
 
@@ -142,40 +166,69 @@ resume_schema=Resume.model_json_schema()
 from pypdf import PdfReader
 from docx import Document
 
+
 def read_pdf(file_path):
-    reader=Pdfreader(file_path)
+
+    reader=PdfReader(file_path)
+
     text=""
+
     for page in reader.pages:
+
         page_text=page.extract_text()
+
         if page_text:
             text+=page_text + "\n"
+
     return text
+
 
 def read_docx(file_path):
+
     document=Document(file_path)
+
     text=""
+
     for paragraph in document.paragraphs:
+
         if paragraph.text.strip():
             text+=paragraph.text + "\n"
+
     for table in document.tables:
+
         for row in table.rows:
+
             for cell in row.cells:
+
                 if cell.text.strip():
                     text+=cell.text + "\n"
+
     return text
 
+
 def read_resume(file_path):
+
     if file_path.suffix.lower() == ".pdf":
+
         return read_pdf(file_path)
+
     elif file_path.suffix.lower() == ".docx":
+
         return read_docx(file_path)
+
     else:
+
         return None
 
+
+#part 4 final score
+
 def final_score(job,resume):
+
     match_schema=MatchResult.model_json_schema()
+
     prompt=f"""
-    
+
     You are an HR recruiter.
 
     Compare the candidate's resume with the job description.
@@ -185,6 +238,7 @@ def final_score(job,resume):
 
     CANDIDATE RESUME:
     {resume.model_dump_json(indent=2)}
+
     Return JSON matching this schema:
 
     {match_schema}
@@ -199,22 +253,41 @@ def final_score(job,resume):
     6. A short final verdict
 
     Keep the response concise and easy to read.
+
+    Return only valid JSON.
+
     """
+
     message={
         "role": "user",
-        "content" : prompt
+        "content": prompt
     }
+
     messages=[message]
+
     response_format={
         "type": "json_object"
     }
-    response = client.chat.completions.create(model=model, messages=messages, response_format=response_format)
-    data = json.loads(response.choices[0].message.content)
+
+    response=client.chat.completions.create(
+        model=model,
+        messages=messages,
+        response_format=response_format
+    )
+
+    raw_output=response.choices[0].message.content
+
+    data=json.loads(raw_output)
+
     return MatchResult(**data)
-    
-    
+
+
+#part 5 parsing the resume
+
 def parse_resume(resume_text):
+
     system_prompt=f"""
+
     You are an expert resume parser.
 
     Extract information from the resume based on its meaning,
@@ -223,6 +296,7 @@ def parse_resume(resume_text):
     Different resumes may use different headings.
 
     For example:
+
     - Experience
     - Professional Experience
     - Work History
@@ -245,70 +319,48 @@ def parse_resume(resume_text):
     3. If a list has no information, return an empty list.
     4. Include internships inside experiences.
     5. Extract skills mentioned across the entire resume.
+    6. total_experience should be in years.
+    7. If total experience cannot be calculated, return null.
+
     """
-    user_prompt = f"""
+
+    user_prompt=f"""
+
     Parse the following resume:
 
     {resume_text}
+
     """
+
     message_system={
-        "role" : "system",
-        "content" : system_prompt
+        "role": "system",
+        "content": system_prompt
     }
+
     message_user={
-        "role" : "user",
-        "content" : user_prompt
+        "role": "user",
+        "content": user_prompt
     }
-    messages=[message_system, message_user]
+
+    messages=[message_system,message_user]
+
     response_format={
         "type": "json_object"
     }
-    response=client.chat.completions.create(model=model, messages=messages, response_format=response_format)
-    raw_output = response.choices[0].message.content
-    data = json.loads(raw_output)
-    resume = Resume(**data)
+
+    response=client.chat.completions.create(
+        model=model,
+        messages=messages,
+        response_format=response_format
+    )
+
+    raw_output=response.choices[0].message.content
+
+    data=json.loads(raw_output)
+
+    resume=Resume(**data)
+
     return resume
 
-resume_folder=path("week1/mini_project/resumes")
-all_results=[]
-for file_path in resume_folder.iterdir():
-    if file_path.suffix.lower() in [".pdf", ".docx"]:
-        continue
-    print("\nProcessing resume:", file_path.name)
-    resume_text=read_resume(file_path)
-    parsed_resume=parse_resume(resume_text)
-    time.sleep(5)
-    result=final_score(job,parsed_resume)
-    time.sleep(5)
-    print("score: ",result.score)
-    all_results.append(
-        {
-            "name":parsed_resume.name,
-            "score":result.score,
-            "details":result.details
-        }
-    )
-all_results.sort(
-    key=lamda candidate:candidate["score"],
-    reverse=True
-)
-top_2=all_results[:2]
-worst_2=all_results[-2:]
-print("top 2 candidates")
-for candidate in top_2:
-    print(
-        candidate["name"],
-        "-",
-        candidate["score"],
-        "%"
-    )
-    print(candidate["details"])
-print("lowest 2 candiate")
-for candidate in wrost_2:
-    print(
-        candidate["name"],
-        "-",
-        candidate["score"],
-        "%"
-    )
-    print(candidate["details"])
+
+#part 6 processing all resumes
