@@ -1,0 +1,156 @@
+    this file is about how we setup the project day to day 
+
+------------------------------------------------------------------------------------------------------------------
+Day 1 – Project inspection and environment audit
+- Extract and inspect the ZIP.
+- Check your laptop's Python, Node.js, PostgreSQL, Redis and Ollama installations.
+- Check existing virtual environments and dependencies.
+- Identify missing or incorrectly configured components.
+Foundation
+
+
+
+Day 2 – PostgreSQL and pgvector
+- Configure PostgreSQL.
+- Create chatdb and ragdb.
+- Enable pgvector.
+- Verify database tables and vector compatibility.
+- Test Python database connections.
+
+
+
+Day 3 – Redis and Ollama
+- Configure Redis, preferably through Docker if appropriate.
+- Verify Redis connectivity.
+- Configure Ollama.
+- Download and test a suitable local LLM.
+- Check available RAM and GPU resources.
+
+
+
+Day 4 – Backend setup
+- Configure Python virtual environment.
+- Install compatible dependencies.
+- Configure .env.
+- Start FastAPI.
+- Test health check, models and database connections.
+
+
+
+Day 5 – RAG pipeline and PDF indexing
+- Inspect PDF preprocessing.
+- Test text extraction.
+- Verify chunking and BGE-M3 embeddings.
+- Populate PostgreSQL.
+- Test semantic retrieval.
+Core AI functionality
+
+
+
+Day 6 – React frontend and complete integration
+- Install frontend dependencies.
+- Start React.
+- Connect frontend to backend.
+- Test streaming responses, sessions, history and memory.
+- Fix integration errors.
+
+
+
+Day 7 – Deployment preparation and deployment
+- Configure production environment variables.
+- Prepare frontend and backend for deployment.
+- Select suitable hosting for PostgreSQL, Redis and model inference.
+- Deploy supported components.
+- Test the live application.
+
+
+--------------------------------------------------------------------------------------------------
+at the end of the 
+
+Before we finish today, prepare a detailed progress report containing:
+
+1. What we completed.
+2. What is working.
+3. What errors we fixed.
+4. What is still pending.
+5. Important installation paths and configurations.
+6. Commands required to restart the services.
+7. Any changes made to project files.
+8. The exact next step for tomorrow.
+
+Also generate a ready-to-paste prompt for the next day's session. Preserve all important technical details so we don't repeat previous work.
+----------------------------------------------------------------------------------------------------
+
+
+day1
+
+# Knowledge Copilot – Day 1: Project Inspection and Environment Audit
+
+I want to set up and deploy a complete project called **Knowledge Copilot**, a RAG-powered AI chatbot.
+
+I have attached:
+1. The complete project ZIP.
+2. Its README file/content.
+
+My laptop runs Windows 11, and I use VS Code and PowerShell.
+
+My project location from my previous attempt was:
+
+`C:\Users\mrayu\AI_Engineering\ScholarLens\knowledge-copilot-main`
+
+I have previously attempted to install PostgreSQL, pgvector, Redis, Python dependencies and other requirements, but I am not sure whether everything was configured correctly.
+
+## Your responsibilities
+
+Act as my senior AI/ML engineer and guide me through this project like a beginner-friendly technical mentor.
+
+### Today's objective
+Only inspect my project and existing laptop environment. Do not start the complete installation today.
+
+### Step 1: Inspect the project
+- Examine the ZIP structure.
+- Inspect backend and frontend files.
+- Read requirements.txt and package.json.
+- Identify missing dependencies, configuration issues and potential code errors.
+- Compare the actual code with the README.
+
+### Step 2: Audit my laptop
+Guide me to check:
+- Python version and installed Python versions.
+- Node.js and npm.
+- PostgreSQL and psql.
+- Existing PostgreSQL databases.
+- Whether pgvector is installed in PostgreSQL.
+- Whether the Python pgvector package is installed in my project virtual environment.
+- Docker and Redis.
+- Ollama and downloaded models.
+- RAM, CPU and GPU availability.
+
+### Step 3: Check my previous setup
+Do not delete, recreate or reinstall anything without checking first.
+
+Identify which components are already working and which require repair.
+
+### Teaching rules
+1. Explain everything in easy Hinglish.
+2. Give exact PowerShell commands.
+3. Give only 2–4 commands at a time.
+4. Wait for me to execute commands and share their output.
+5. Explain errors and fix them before proceeding.
+6. Never assume a command succeeded.
+7. Do not skip verification.
+8. Do not reinstall working software.
+9. Never ask me to expose passwords or API secrets.
+10. Keep track of completed steps and remaining work.
+
+### Completion criteria
+At the end of Day 1, give me:
+- A complete environment audit.
+- A list of working components.
+- A list of missing or broken components.
+- A prioritized plan for Day 2.
+- A short progress report that I can paste into the next day's chat.
+
+Do not proceed to Day 2 until I explicitly ask you to.
+
+----------------------------------------------------------------------------------------------------

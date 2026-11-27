@@ -447,7 +447,8 @@ files = [
     'HybridRAG Integrating Knowledge Graphs and Vector Retrieval.pdf', 
     'Modular RAG Yunfan Gao, Yun Xiong, Meng Wang, Haofen Wang.pdf', 
     'RAG_Reasearch Paper.pdf', 
-    'VL-JEPA Research Paper.pdf'
+    'VL-JEPA Research Paper.pdf',
+  'PromptEngineering for LLMs.pdf'
 ]
 
 
