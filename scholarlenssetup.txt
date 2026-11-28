@@ -882,7 +882,156 @@ Completion criteria: Redis and Ollama should both pass their connection tests.
 At the end, provide a Day 4 handover report.
 
 PREVIOUS PROGRESS REPORT:
-[PASTE DAY 2 REPORT HERE]
+[# ScholarLens – Knowledge Copilot | Day 3
+
+I am building a real-world AI project called **Knowledge Copilot (ScholarLens)**.
+
+I am following a structured 7-day project setup and learning roadmap. I don't want to blindly copy commands. I want to understand every technology, its purpose, implementation, and how all components work together.
+
+Act as my **AI Engineering Mentor and Technical Interview Preparation Coach**.
+
+## My working environment
+
+**Project Root:**
+`C:\Users\mrayu\AI_Engineering\ScholarLens\knowledge-copilot-main`
+
+**Backend:**
+`C:\Users\mrayu\AI_Engineering\ScholarLens\knowledge-copilot-main\backend`
+
+**Frontend:**
+`C:\Users\mrayu\AI_Engineering\ScholarLens\knowledge-copilot-main\frontend`
+
+**Python Virtual Environment:**
+`backend\.venv`
+
+**PDF Data Folder:**
+`backend\data`
+
+### Installed technologies
+
+- Python 3.12.10 (project virtual environment)
+- PostgreSQL 17.12
+- pgvector PostgreSQL extension 0.8.7
+- Python pgvector 0.5.1
+- psycopg2
+- Redis 8.2.11
+- Ollama 0.40.18
+- Local Ollama model: `qwen3:4b`
+- BGE-M3: `BAAI/bge-m3`
+- Node.js 24.18.0
+- npm 11.16.0
+
+## Day 1 completed
+
+- Inspected project architecture, backend, frontend, dependencies and environment.
+- Verified PostgreSQL, Redis and Ollama availability.
+- Verified existing databases `chatdb` and `ragdb`.
+- Inspected existing database tables and PDF data folder.
+- Identified a potential mismatch: `ollama_service.py` references `gpt-oss:20b`, while the downloaded local model is `qwen3:4b`.
+- No PDF ingestion was performed.
+
+## Day 2 completed
+
+### PostgreSQL and pgvector
+
+- Verified PostgreSQL service and port 5432.
+- Verified both existing databases: `chatdb` and `ragdb`.
+- Verified `ragdb` has pgvector extension 0.8.7.
+- Verified existing `chunks` table:
+
+  - `id UUID`
+  - `content TEXT`
+  - `embedding vector(1024)`
+
+- Inspected `chatdb` tables:
+  - `chat_messages`
+  - `chat_sessions`
+
+### Python integration
+
+- Installed `pgvector==0.5.1` in backend virtual environment.
+- Successfully connected Python to both databases.
+- Fixed vector adaptation issue using `Vector()` and `register_vector()`.
+- Successfully loaded the actual BGE-M3 model.
+- Generated a real 1024-dimensional embedding.
+- Successfully tested insertion and cosine similarity retrieval using a temporary transaction.
+- Similarity distance returned `0.0`.
+- Rolled back the test transaction.
+- Verified `chunks` table contains zero records and no temporary test data remains.
+
+### Project file changes
+
+1. `backend/requirements.txt`
+   - Added `pgvector==0.5.1`.
+
+2. `backend/db_rag.py`
+   - Added:
+     `from pgvector import Vector`
+   - Added:
+     `from pgvector.psycopg2 import register_vector`
+   - Registered the vector adapter after establishing a database connection.
+   - Used `Vector(chunk_emb)` for insertion.
+   - Used `Vector(query_emb)` for similarity search.
+   - Python syntax compilation passed.
+
+3. `backend/verify_chunks.py`
+   - Added a read-only helper to count chunks and check temporary test records.
+
+### Important observations
+
+- `db_rag.py` initializes `EmbeddingModel()` at import time, which loads BGE-M3.
+- `add_chunks()` and `get_top_k_docs()` currently print exceptions and suppress them.
+- `chat_sessions` did not show primary key or unique constraints during inspection. Compare this with application code later; do not alter the schema without approval.
+- `ollama_service.py` has the model-name mismatch described above.
+
+## Day 3 objective: Understand the PDF ingestion pipeline
+
+Today's goal is to understand how documents move from PDF files to PostgreSQL vector storage.
+
+Inspect these components:
+
+1. `populate_db.py` – main ingestion entry point.
+2. PDF loading and text extraction.
+3. Text cleaning and preprocessing.
+4. Text chunking and chunk-size/overlap logic.
+5. BGE-M3 embedding generation.
+6. PostgreSQL insertion through `db_rag.py`.
+7. Error handling and duplicate-ingestion behavior.
+
+Explain how all these components connect:
+
+PDF → Text Extraction → Cleaning → Chunking → BGE-M3 Embeddings → pgvector → PostgreSQL.
+
+## Strict working rules
+
+1. First inspect existing files and code. Do not modify anything unnecessarily.
+2. Give only 2–4 PowerShell commands at a time.
+3. Explain the purpose of each command in easy Hinglish.
+4. Wait for my output before giving the next commands.
+5. If an error occurs, fix and verify it before proceeding.
+6. Do not reinstall packages or recreate databases that are already working.
+7. Never expose or ask me to share `.env` passwords or API keys.
+8. Do not delete existing files, tables, databases or records.
+9. **Do not run `populate_db.py`, bulk ingestion, or insert PDF content into the database without my explicit approval.**
+10. First perform read-only inspection and, where safe, test extraction/chunking on a small sample without database insertion.
+11. Help me understand the implementation rather than just providing commands.
+12. Keep explanations beginner-friendly and use practical examples.
+
+## Final Day 3 deliverables
+
+At the end, prepare:
+
+- Detailed Day 3 progress report in easy Hinglish.
+- What we completed and what is working.
+- Errors fixed.
+- Pending work.
+- Important functions and file paths.
+- Complete explanation of the PDF-to-vector ingestion pipeline.
+- Interview questions and answers based on today's work.
+- Exact next step for Day 4.
+- A ready-to-paste prompt for the next session.
+
+**Start Day 3 by confirming the project path and inspecting the existing ingestion-related files. Do not assume anything has already been implemented without checking the actual source code.**]
 ------------------------------------------------------------------------------------------
 Day 4 – Python backend setup
 

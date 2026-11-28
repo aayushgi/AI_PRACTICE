@@ -10,3 +10,5 @@ torch
 transformers
 PyMuPDF  # for fitz
 pydantic
+
+pgvector==0.5.1
